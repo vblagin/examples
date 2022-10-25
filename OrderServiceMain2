@@ -38,8 +38,8 @@ class Order {
 }
 
 class OrderService {
-    private List<Order> actualAll;
-    private List<Order> actualLast2; // Не 100, а 2, для простоты
+    private volatile List<Order> actualAll;
+    private volatile List<Order> actualLast2; // Не 100, а 2, для простоты
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
@@ -112,7 +112,7 @@ class OrderService {
                     while (itr.hasNext() && count++ < 2) {  // < 100
                         list2.add((Order)itr.next());
                     }
-                    
+
                     actualLast2 = Collections.synchronizedList(list2);
                     return actualLast2;
                 }
