@@ -86,26 +86,30 @@ class OrderService {
     }
 
     public List<Order> getAll() {
-        readLock.lock();
-        try {
-            if (actualAll == null)
-                actualAll = Collections.synchronizedList(new ArrayList<>(mapOrder.values()));
-
-            return actualAll;
-        } finally {
-            readLock.unlock();
+        if (actualAll == null) {
+            writeLock.lock();
+            try {
+                // Повторная проверка после входа в блокировку, возможно была конкуретная попытка создания кеша
+                if (actualAll == null)
+                    actualAll = Collections.synchronizedList(new ArrayList<>(mapOrder.values()));
+            } finally {
+                writeLock.lock();
+            }
         }
+        return actualAll;
     }
 
     public List<Order> getLast2() {
-        readLock.lock();
-        try {
-            if (actualLast2 == null)
-                actualLast2 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
-
-            return actualLast2;
-        } finally {
-            readLock.unlock();
+        if (actualLast2 == null) {
+            writeLock.lock();
+            try {
+                // Повторная проверка после входа в блокировку, возможно была конкуретная попытка создания кеша
+                if (actualLast2 == null)
+                    actualLast2 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
+            } finally {
+                writeLock.lock();
+            }
         }
+        return actualLast2;
     }
 }
