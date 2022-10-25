@@ -12,9 +12,7 @@ public class Main {
 
         orderService.putOrder(new  Order(5));
         orderService.removeOrder(4);
-        orderService.putOrder(new  Order(100));
-        orderService.putOrder(new  Order(88));
-        orderService.removeOrder(100);
+        orderService.putOrder(new  Order(6));
 
         System.out.println(orderService.getOrder(3));
         System.out.println(orderService.getAll());
