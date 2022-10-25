@@ -40,7 +40,7 @@ class Order {
 
 class OrderService {
     private List<Order> actualAll;
-    private List<Order> actualLast100;
+    private List<Order> actualLast2; // Не 100, а 2, для простоты
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
@@ -68,7 +68,7 @@ class OrderService {
         try {
             mapOrder.put(order.getId(), order);
             actualAll = null;
-            actualLast100 = null;
+            actualLast2 = null;
         } finally {
             writeLock.unlock();
         }
@@ -79,7 +79,7 @@ class OrderService {
         try {
             mapOrder.remove(id);
             actualAll = null;
-            actualLast100 = null;
+            actualLast2 = null;
         } finally {
             writeLock.unlock();
         }
@@ -100,10 +100,10 @@ class OrderService {
     public List<Order> getLast2() {
         readLock.lock();
         try {
-            if (actualLast100 == null)
-                actualLast100 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
+            if (actualLast2 == null)
+                actualLast2 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
 
-            return actualLast100;
+            return actualLast2;
         } finally {
             readLock.unlock();
         }
