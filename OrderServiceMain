@@ -1,0 +1,111 @@
+package ru.vblagin;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
+
+public class Main {
+
+    public static void main(String[] args) {
+        OrderService orderService = new OrderService();
+
+        orderService.putOrder(new  Order(5));
+        orderService.removeOrder(4);
+
+        System.out.println(orderService.getOrder(3));
+        System.out.println(orderService.getAll());
+        System.out.println(orderService.getLast2());
+    }
+}
+
+class Order {
+    private volatile long id;
+
+    public Order(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return "Order [" + getId() + "]";
+    }
+}
+
+class OrderService {
+    private List<Order> actualAll;
+    private List<Order> actualLast100;
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
+
+    private SortedMap<Long, Order> mapOrder = new ConcurrentSkipListMap<Long, Order>(Comparator.reverseOrder());
+    {
+        mapOrder.put(1L, new  Order(1));
+        mapOrder.put(2L, new  Order(2));
+        mapOrder.put(3L, new  Order(3));
+        mapOrder.put(4L, new  Order(4));
+    }
+
+    public Order getOrder(long id) {
+        readLock.lock();
+        try {
+            return mapOrder.get(id);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public void putOrder(Order order) {
+        writeLock.lock();
+        try {
+            mapOrder.put(order.getId(), order);
+            actualAll = null;
+            actualLast100 = null;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void removeOrder(long id) {
+        writeLock.lock();
+        try {
+            mapOrder.remove(id);
+            actualAll = null;
+            actualLast100 = null;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public List<Order> getAll() {
+        readLock.lock();
+        try {
+            if (actualAll == null)
+                actualAll = Collections.synchronizedList(new ArrayList<>(mapOrder.values()));
+
+            return actualAll;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public List<Order> getLast2() {
+        readLock.lock();
+        try {
+            if (actualLast100 == null)
+                actualLast100 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
+
+            return actualLast100;
+        } finally {
+            readLock.unlock();
+        }
+    }
+}
