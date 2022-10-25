@@ -93,7 +93,7 @@ class OrderService {
                 if (actualAll == null)
                     actualAll = Collections.synchronizedList(new ArrayList<>(mapOrder.values()));
             } finally {
-                writeLock.lock();
+                writeLock.unlock();
             }
         }
         return actualAll;
@@ -107,7 +107,7 @@ class OrderService {
                 if (actualLast2 == null)
                     actualLast2 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
             } finally {
-                writeLock.lock();
+                writeLock.unlock();
             }
         }
         return actualLast2;
