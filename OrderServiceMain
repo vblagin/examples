@@ -13,6 +13,8 @@ public class Main {
         OrderService orderService = new OrderService();
 
         orderService.putOrder(new  Order(5));
+        orderService.putOrder(new  Order(7));
+        orderService.putOrder(new  Order(6));
         orderService.removeOrder(4);
 
         System.out.println(orderService.getOrder(3));
@@ -92,6 +94,8 @@ class OrderService {
                 // Повторная проверка после входа в блокировку, возможно была конкуретная попытка создания кеша
                 if (actualAll == null)
                     actualAll = Collections.synchronizedList(new ArrayList<>(mapOrder.values()));
+
+                return actualAll;
             } finally {
                 writeLock.unlock();
             }
@@ -106,6 +110,8 @@ class OrderService {
                 // Повторная проверка после входа в блокировку, возможно была конкуретная попытка создания кеша
                 if (actualLast2 == null)
                     actualLast2 = Collections.synchronizedList(new ArrayList<>(mapOrder.values().stream().limit(2).collect(Collectors.toList())));
+
+                return actualLast2;
             } finally {
                 writeLock.unlock();
             }
