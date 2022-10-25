@@ -1,9 +1,9 @@
 package ru.vblagin;
 
-        import java.util.*;
-        import java.util.concurrent.locks.Lock;
-        import java.util.concurrent.locks.ReadWriteLock;
-        import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Main {
 
@@ -91,6 +91,8 @@ class OrderService {
                 // Повторная проверка после входа в блокировку, возможно была конкуретная попытка создания кеша
                 if (actualAll == null)
                     actualAll = Collections.synchronizedList(new ArrayList<>(mapOrder.values()));
+
+                return actualAll;
             } finally {
                 writeLock.unlock();
             }
@@ -110,7 +112,9 @@ class OrderService {
                     while (itr.hasNext() && count++ < 2) {  // < 100
                         list2.add((Order)itr.next());
                     }
+                    
                     actualLast2 = Collections.synchronizedList(list2);
+                    return actualLast2;
                 }
             } finally {
                 writeLock.unlock();
