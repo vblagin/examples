@@ -48,7 +48,7 @@ class OrderService {
     private final Lock readLock = readWriteLock.readLock();
     private final Lock writeLock = readWriteLock.writeLock();
 
-    private SortedMap<Long, Order> mapOrder = new ConcurrentSkipListMap<Long, Order>(Comparator.reverseOrder());
+    private Map<Long, Order> mapOrder = new ConcurrentSkipListMap<Long, Order>(Comparator.reverseOrder());
     {
         mapOrder.put(1L, new  Order(1));
         mapOrder.put(2L, new  Order(2));
